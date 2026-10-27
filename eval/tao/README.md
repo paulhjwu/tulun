@@ -35,6 +35,38 @@ Steps:
 2. Put the model in `models/nllb-tao-ft/` in the repo, by syncing Drive or unzipping the download.
 3. Install a CUDA build of PyTorch, then run `tao_nllb_gemma.ipynb` from this folder. Set `DEEPINFRA_API_KEY` in the environment or a `.env` file.
 
+### Post-editing algorithm
+
+For each Chinese sentence in B, the notebook builds a draft with the fine-tuned NLLB, retrieves similar past translations and glossary entries, and asks Gemma 4 to correct the draft.
+
+```mermaid
+flowchart TD
+    S["Chinese sentence from B"] --> NLLB1["Fine-tuned NLLB<br/>(beam search, forced tao_Latn)"]
+    S --> BM25["BM25 over Chinese side of memory C<br/>(jieba tokens, stopwords removed)"]
+    S --> GL["Glossary D<br/>(substring match, longest entries first, max 30)"]
+
+    NLLB1 --> DRAFT["MT draft"]
+    BM25 --> NB["Top-N similar pairs<br/>(zh, Tao reference)<br/>exact match optionally excluded"]
+    GL --> GH["Glossary hits<br/>(zh → Tao)"]
+
+    NB --> NLLB2["Fine-tuned NLLB<br/>translates each neighbour's Chinese"]
+    NLLB2 --> NBMT["MT for each neighbour"]
+
+    GH --> P
+    NB --> P
+    NBMT --> P
+    DRAFT --> P["Build post-edit prompt<br/>glossary entries<br/>past translations as Chinese / MT / reference<br/>new sentence with its MT draft"]
+
+    P --> G["Gemma 4 via DeepInfra<br/>(responses cached by md5)"]
+    G --> T["Extract text inside Tao tags"]
+    T --> OUT["Post-edited Tao translation"]
+
+    OUT --> EV["chrF++ and BLEU against reference<br/>compared with the NLLB draft alone"]
+    DRAFT --> EV
+```
+
+Setting `MODE` to a value other than `post_edit` skips the NLLB draft and the neighbour MT. Gemma then translates from the retrieved pairs alone (few-shot).
+
 Retrieval uses BM25 over the Chinese side of the memory, segmented with `jieba`, plus substring matches against the glossary. LLM responses and translations are cached on disk under `cache/`, so re-runs are free.
 
 ## 2. CUNP89T vs. Chang
