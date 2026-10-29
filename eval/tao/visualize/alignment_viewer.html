@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tao Alignment Viewer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f5f2eb; color: #2c2c2c; padding: 24px; }
+  h1 { font-size: 1.4rem; font-weight: normal; color: #5a3e1b; margin-bottom: 20px; letter-spacing: 0.03em; }
+
+  /* ── Selectors ── */
+  .selectors { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+  .selectors label { font-size: 0.85rem; color: #7a6040; text-transform: uppercase; letter-spacing: 0.05em; }
+  .selectors select {
+    font-size: 1rem; padding: 6px 12px; border: 1px solid #c8b89a;
+    border-radius: 4px; background: #fffdf8; color: #2c2c2c; cursor: pointer;
+  }
+  .selectors select:focus { outline: 2px solid #c8903a; }
+
+  .selectors input[type=file] { font-size: 0.85rem; }
+  #load-status { font-size: 0.85rem; color: #9a7a50; }
+
+  #btn-next {
+    font-size: 1.3rem; line-height: 1;
+    padding: 5px 14px; border: 1px solid #c8b89a;
+    border-radius: 4px; background: #fffdf8; color: #5a3e1b;
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  #btn-next:hover  { background: #f0e8d8; border-color: #c8903a; }
+  #btn-next:active { background: #e8d8c0; }
+  #btn-prev {
+    font-size: 1.3rem; line-height: 1;
+    padding: 5px 14px; border: 1px solid #c8b89a;
+    border-radius: 4px; background: #fffdf8; color: #5a3e1b;
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  #btn-prev:hover  { background: #f0e8d8; border-color: #c8903a; }
+  #btn-prev:active { background: #e8d8c0; }
+
+  /* ── Verse panel ── */
+  .verse-panel {
+    background: #fffdf8; border: 1px solid #ddd0b8;
+    border-radius: 6px; padding: 24px; max-width: 100%;
+  }
+  .verse-ref {
+    font-size: 0.8rem; color: #9a7a50; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 16px;
+  }
+
+  /* ── Sentence panels ── */
+  .sentences {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+  }
+  .sentence-block { background: #f7f3eb; border-radius: 4px; padding: 14px 16px; }
+  .sentence-block.ref { background: #eef3f8; }
+  .sentence-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9a7a50; margin-bottom: 6px;
+  }
+  .sentence-block.ref .sentence-label { color: #5a7a9a; }
+  .sentence-text { font-size: 1.05rem; line-height: 1.6; }
+  .sentence-text .vn { font-size: 0.7rem; color: #9a7a50; margin-right: 4px; vertical-align: super; }
+  .sentence-text .vline + .vline { margin-top: 6px; }
+  .sentence-block.cmn .sentence-text { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+
+  /* ── Tape section ── */
+  .tape-section h3 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9a7a50; margin-bottom: 16px;
+  }
+
+  /* Horizontally scrollable wrapper */
+  .tapes-outer {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  /*
+   * Two independent rows (HYP on top, REF below), each in its own word order.
+   * An SVG layer between them draws one curved link per alignment pair, so
+   * links cross wherever the word orders differ.
+   */
+  .tapes {
+    position: relative;
+    display: inline-block;
+    min-width: 100%;
+  }
+  .tape-row { display: flex; align-items: center; gap: 6px; }
+  .tape-links { display: block; height: 84px; overflow: visible; }
+
+  /* ── Tape pointer labels ── */
+  .tape-ptr {
+    width: 56px; flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #5a3e1b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+  .tape-ptr .arrow {
+    display: inline-block;
+    width: 0; height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 10px solid #5a3e1b;
+    flex-shrink: 0;
+  }
+
+  /* ── Tape cells ── */
+  .tc {
+    padding: 5px 9px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.88rem;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 36px;
+  }
+
+  /* Aligned to an identical word */
+  .tc.exact { background: #e8f4e8; border-color: #8cc88c; color: #1a4a1a; }
+  /* Aligned, different spelling */
+  .tc.diff  { background: #fdebd8; border-color: #e8a878; color: #7a3010; }
+  /* No counterpart on the other row */
+  .tc.hyp.ua { background: #fff59d; border-color: #c8a800; color: #5a4000; font-style: italic; }
+  .tc.ref.ua { background: #ffe082; border-color: #c49000; color: #5a3800; font-style: italic; }
+
+  /* ── Links ── */
+  .lk { fill: none; stroke-width: 1.6; stroke-linecap: round; opacity: 0.75; transition: opacity 0.1s; }
+  .lk.exact { stroke: #5aa85a; }
+  .lk.diff  { stroke: #d98a50; }
+  .tapes.hovering .lk { opacity: 0.1; }
+  .tapes.hovering .lk.hl { opacity: 1; stroke-width: 2.4; }
+  .tapes.hovering .tc:not(.hl) { opacity: 0.45; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #7a6040; }
+  .legend-swatch {
+    width: 22px; height: 16px; border-radius: 3px; border: 1px solid;
+  }
+  .sw-exact  { background: #e8f4e8; border-color: #8cc88c; }
+  .sw-diff   { background: #fdebd8; border-color: #e8a878; }
+  .sw-ua-hyp   { background: #fff59d; border-color: #c8a800; }
+  .sw-ua-ref   { background: #ffe082; border-color: #c49000; }
+
+  #no-verse { color: #9a7a50; font-style: italic; }
+
+  /* ── Clickable tape cells ── */
+  .tc { cursor: pointer; }
+  .tc:hover { filter: brightness(0.93); }
+
+  /* ── Word popup ── */
+  .word-popup {
+    position: fixed;
+    z-index: 999;
+    background: #fffdf8;
+    border: 1px solid #c8903a;
+    border-radius: 6px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    font-family: Georgia, serif;
+    min-width: 160px;
+    max-width: 360px;
+    display: none;
+    pointer-events: none;
+  }
+  .word-popup.active { display: block; }
+  /* Popup with dictionary results: scrollable, so it must take pointer events */
+  .word-popup.scroll { pointer-events: auto; max-width: 440px; max-height: 60vh; overflow-y: auto; }
+  .dict-note  { font-size: 0.8rem; color: #9a7a50; font-style: italic; }
+  .dict-entry { margin: 8px 0 2px; }
+  .dict-head  { font-size: 0.92rem; font-weight: bold; color: #5a3e1b; }
+  .dict-sub   { font-size: 0.72rem; color: #9a7a50; font-style: italic; margin-left: 6px; font-weight: normal; }
+  .dict-gloss { font-size: 0.9rem; color: #2c2c2c; margin-top: 1px; font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  .dict-ex    { font-size: 0.8rem; color: #555; margin-top: 3px; line-height: 1.4; }
+  .dict-ex .zh { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  .dict-src   { font-size: 0.7rem; color: #9a7a50; }
+  .popup-row { display: flex; align-items: baseline; gap: 10px; margin: 3px 0; }
+  .popup-label {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9a7a50; flex-shrink: 0; min-width: 28px;
+  }
+  .popup-word { font-size: 1.05rem; color: #2c2c2c; word-break: break-word; }
+  .popup-sep { width: 100%; height: 1px; background: #e0d8c8; margin: 6px 0; }
+</style>
+</head>
+<body>
+<h1>Tao Parallel Alignment Viewer: Chang (REF) vs. CUNP89T (HYP)</h1>
+
+<div class="selectors">
+  <label for="sel-verse">Verse</label>
+  <select id="sel-verse" disabled><option value="">—</option></select>
+  <button id="btn-prev" title="Previous verse">&#x25C0;</button>
+  <button id="btn-next" title="Next verse">&#x25B6;</button>
+  <label for="file-input">Load files</label>
+  <input type="file" id="file-input" accept=".json,.txt" multiple title="alignment_parallel.json, dictionary_records.json, Jonah.txt, Ruth.txt">
+  <span id="load-status"></span>
+</div>
+
+<div class="verse-panel">
+  <div id="no-verse">Loading alignment_parallel.json …</div>
+  <div id="verse-content" style="display:none">
+    <div class="verse-ref" id="verse-ref"></div>
+
+    <div class="sentences">
+      <div class="sentence-block ref cmn">
+        <div class="sentence-label">C (Chinese)</div>
+        <div class="sentence-text" id="sent-c"></div>
+      </div>
+      <div class="sentence-block ref">
+        <div class="sentence-label">NIV (English)</div>
+        <div class="sentence-text" id="sent-niv"></div>
+      </div>
+      <div class="sentence-block ref">
+        <div class="sentence-label">REF (Chang)</div>
+        <div class="sentence-text" id="sent-ref"></div>
+      </div>
+      <div class="sentence-block">
+        <div class="sentence-label">HYP (CUNP89T)</div>
+        <div class="sentence-text" id="sent-hyp"></div>
+      </div>
+    </div>
+
+    <div class="tape-section">
+      <h3>Word Alignment <span style="text-transform:none;letter-spacing:0;font-weight:normal">· each row keeps its own word order; hover a word to highlight its links, click for details</span></h3>
+      <div class="tapes-outer">
+        <div id="tapes-grid" class="tapes"></div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch sw-exact"></div>Identical</div>
+        <div class="legend-item"><div class="legend-swatch sw-diff"></div>Different</div>
+        <div class="legend-item"><div class="legend-swatch sw-ua-hyp"></div>HYP unaligned</div>
+        <div class="legend-item"><div class="legend-swatch sw-ua-ref"></div>REF unaligned</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="word-popup" class="word-popup"></div>
+
+<script>
+let DATA = {};
+let KEYS = [];
+
+const selVerse     = document.getElementById("sel-verse");
+const noVerse      = document.getElementById("no-verse");
+const verseContent = document.getElementById("verse-content");
+const tapesGrid    = document.getElementById("tapes-grid");
+const loadStatus   = document.getElementById("load-status");
+
+function label(key, i) {
+  const e = DATA[key];
+  return `#${i + 1}  ${e.book} ${e.chapter}:${e.verses}`;
+}
+
+// Entries are shown in the order they appear in the JSON (sorted.csv order).
+function loadData(d) {
+  DATA = d;
+  KEYS = Object.keys(d);
+  selVerse.innerHTML = '<option value="">—</option>';
+  KEYS.forEach((k, i) => {
+    const o = document.createElement("option");
+    o.value = k; o.textContent = label(k, i);
+    selVerse.appendChild(o);
+  });
+  selVerse.disabled = KEYS.length === 0;
+  loadStatus.textContent = KEYS.length + " verses";
+  hide();
+  noVerse.textContent = "Select a verse above.";
+  if (KEYS.length) { selVerse.value = KEYS[0]; render(KEYS[0]); }
+}
+
+function hide() {
+  noVerse.style.display = "";
+  verseContent.style.display = "none";
+}
+
+function step(delta) {
+  const i = KEYS.indexOf(selVerse.value);
+  if (i < 0) return;
+  const j = i + delta;
+  if (j < 0 || j >= KEYS.length) return;
+  selVerse.value = KEYS[j];
+  render(KEYS[j]);
+}
+
+selVerse.addEventListener("change", () => {
+  if (!selVerse.value) { hide(); return; }
+  render(selVerse.value);
+});
+document.getElementById("btn-prev").addEventListener("click", () => step(-1));
+document.getElementById("btn-next").addEventListener("click", () => step(1));
+
+// ── Source verses (C and NIV) from Jonah.txt / Ruth.txt ───────────────────
+// SOURCE[book][chapter][verse] = { C: "...", NIV: "..." }
+const SOURCE = {};
+const SOURCE_FILES = { Jonah: "../benchmark_data/Jonah.txt", Ruth: "../benchmark_data/Ruth.txt" };
+
+function parseSource(book, text) {
+  const out = {};
+  const re = /^=== Chapter (\d+), Verse (\d+) ===\s*$/gm;
+  const heads = [...text.matchAll(re)];
+  heads.forEach((h, i) => {
+    const body = text.slice(h.index + h[0].length, i + 1 < heads.length ? heads[i + 1].index : text.length);
+    const v = {};
+    for (const m of body.matchAll(/^(C|NIV):[ \t]*(.*)$/gm)) v[m[1]] = m[2].trim();
+    (out[+h[1]] ??= {})[+h[2]] = v;
+  });
+  SOURCE[book] = out;
+}
+
+function sourceHtml(entry, field) {
+  const [a, b = a] = String(entry.verses).split("-").map(Number);
+  const lines = [];
+  for (let v = a; v <= b; v++) {
+    const txt = SOURCE[entry.book]?.[+entry.chapter]?.[v]?.[field];
+    if (txt) lines.push(`<div class="vline"><span class="vn">${v}</span>${escHtml(txt)}</div>`);
+  }
+  return lines.join("") || "<i>not loaded</i>";
+}
+
+function rerender() {
+  if (selVerse.value) render(selVerse.value);
+}
+
+Object.entries(SOURCE_FILES).forEach(([book, url]) =>
+  fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+            .then(s => { parseSource(book, s); rerender(); })
+            .catch(() => { /* use the file picker */ }));
+
+document.getElementById("file-input").addEventListener("change", async e => {
+  try {
+    for (const f of e.target.files) {
+      const text = await f.text();
+      if (/\.json$/i.test(f.name)) {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) buildDictIndex(parsed);   // dictionary_records.json
+        else loadData(parsed);                              // alignment_parallel.json
+      }
+      else parseSource(f.name.replace(/\.txt$/i, ""), text);
+    }
+    rerender();
+  } catch (err) {
+    loadStatus.textContent = "Could not read file: " + err.message;
+  }
+});
+
+// Works over http(s); opened from file:// the fetch fails and the file picker is used instead.
+fetch("alignment_parallel.json")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(loadData)
+  .catch(() => {
+    noVerse.textContent = "Could not fetch alignment_parallel.json. Use “Load files” above to choose it (also Jonah.txt and Ruth.txt).";
+  });
+
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, select")) return;
+  if (e.key === "ArrowLeft")  step(-1);
+  if (e.key === "ArrowRight") step(1);
+});
+
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Current verse: LINKS = [{h, r, cls, path}], HCELLS / RCELLS = token cells in word order
+let LINKS = [], HCELLS = [], RCELLS = [];
+
+const normWord = w => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+function el(tag, cls, text) {
+  const d = document.createElement(tag);
+  if (cls)  d.className = cls;
+  if (text !== undefined) d.textContent = text;
+  return d;
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+/** Unique, in-range [ref_idx, hyp_idx] pairs with an identical/different class. */
+function buildLinks(entry, hypTokens, refTokens) {
+  const seen = new Set(), links = [];
+  for (const [r, h] of entry.alignments || []) {
+    if (r >= refTokens.length || h >= hypTokens.length) continue;
+    const k = r + "," + h;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    const same = normWord(refTokens[r]) !== "" && normWord(refTokens[r]) === normWord(hypTokens[h]);
+    links.push({ r, h, cls: same ? "exact" : "diff" });
+  }
+  return links;
+}
+
+function makeRow(side, tokens, links) {
+  const row = el("div", "tape-row");
+  const ptr = el("div", "tape-ptr");
+  ptr.innerHTML = side.toUpperCase() + " <span class='arrow'></span>";
+  row.appendChild(ptr);
+  const key = side === "hyp" ? "h" : "r";
+  const cells = tokens.map((w, i) => {
+    const mine = links.filter(l => l[key] === i);
+    const cls = !mine.length ? "ua" : mine.some(l => l.cls === "exact") ? "exact" : "diff";
+    const c = el("div", `tc ${side} ${cls}`, w);
+    c.dataset.side = side;
+    c.dataset.idx  = i;
+    row.appendChild(c);
+    return c;
+  });
+  return { row, cells };
+}
+
+function drawLinks() {
+  const svg = tapesGrid.querySelector("svg");
+  if (!svg || !LINKS.length && !HCELLS.length) return;
+  const box = tapesGrid.getBoundingClientRect();
+  const H = svg.getBoundingClientRect().height;
+  svg.setAttribute("width", tapesGrid.scrollWidth);
+  for (const l of LINKS) {
+    const a = HCELLS[l.h].getBoundingClientRect();
+    const b = RCELLS[l.r].getBoundingClientRect();
+    const x1 = a.left + a.width / 2 - box.left;
+    const x2 = b.left + b.width / 2 - box.left;
+    l.path.setAttribute("d", `M ${x1} 0 C ${x1} ${H * 0.55}, ${x2} ${H * 0.45}, ${x2} ${H}`);
+  }
+}
+
+function highlight(cell) {
+  const side = cell.dataset.side, idx = +cell.dataset.idx;
+  const key = side === "hyp" ? "h" : "r";
+  const mine = LINKS.filter(l => l[key] === idx);
+  tapesGrid.classList.add("hovering");
+  cell.classList.add("hl");
+  for (const l of mine) {
+    l.path.classList.add("hl");
+    HCELLS[l.h].classList.add("hl");
+    RCELLS[l.r].classList.add("hl");
+  }
+}
+function clearHighlight() {
+  tapesGrid.classList.remove("hovering");
+  tapesGrid.querySelectorAll(".hl").forEach(n => n.classList.remove("hl"));
+  for (const l of LINKS) l.path.classList.remove("hl");
+}
+
+function render(key) {
+  const entry = DATA[key];
+  const i = KEYS.indexOf(key);
+  document.getElementById("verse-ref").textContent =
+    `${entry.book} ${entry.chapter}:${entry.verses}  ·  #${i + 1} of ${KEYS.length}  ·  ${key}`;
+  document.getElementById("sent-c").innerHTML   = sourceHtml(entry, "C");
+  document.getElementById("sent-niv").innerHTML = sourceHtml(entry, "NIV");
+  document.getElementById("sent-ref").textContent = entry.ref || "";
+  document.getElementById("sent-hyp").textContent = entry.hyp || "";
+
+  const hypTokens = (entry.hyp || "").split(/\s+/).filter(Boolean);
+  const refTokens = (entry.ref || "").split(/\s+/).filter(Boolean);
+  const links = buildLinks(entry, hypTokens, refTokens);
+
+  const hypRow = makeRow("hyp", hypTokens, links);
+  const refRow = makeRow("ref", refTokens, links);
+  HCELLS = hypRow.cells;
+  RCELLS = refRow.cells;
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "tape-links");
+  LINKS = links.map(l => {
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("class", "lk " + l.cls);
+    svg.appendChild(path);
+    return { ...l, path };
+  });
+
+  tapesGrid.innerHTML = "";
+  tapesGrid.classList.remove("hovering");
+  tapesGrid.append(hypRow.row, svg, refRow.row);
+
+  noVerse.style.display = "none";
+  verseContent.style.display = "";
+  drawLinks();
+}
+
+tapesGrid.addEventListener("mouseover", e => {
+  const cell = e.target.closest(".tc");
+  clearHighlight();
+  if (cell) highlight(cell);
+});
+tapesGrid.addEventListener("mouseleave", clearHighlight);
+
+window.addEventListener("resize", drawLinks);
+window.addEventListener("scroll", () => wordPopup.classList.remove("active"));
+if (document.fonts?.ready) document.fonts.ready.then(drawLinks);
+
+// ── Dictionary (dictionary_records.json) ──────────────────────────────────
+// Hash table built once at load: normalized form -> records whose root_form contains it.
+// root_form is noisy ("beywan (ji)", "abeywan ~beywan"), so each record is indexed under
+// every cleaned variant. Click-time lookup is then a single Map.get().
+let DICT = null;   // { byForm: Map, rootEntry: Map, headwords: [[key, rec]], n }
+const DICT_URL = "../dict/dictionary_records.json";
+
+const EDGE_PUNCT = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
+const normKey = w => w.normalize("NFC").toLowerCase().replace(EDGE_PUNCT, "");
+
+function formKeys(rootForm) {
+  const parts = rootForm.replace(/\([^)]*\)/g, " ").split(/[\s~,;/=]+/);
+  return [...new Set(parts.map(normKey).filter(Boolean))];
+}
+
+function buildDictIndex(records) {
+  const byForm = new Map(), rootEntry = new Map(), headwords = [];
+  for (const r of records) {
+    const keys = formKeys(r.root_form || "");
+    for (const k of keys) {
+      const list = byForm.get(k);
+      if (list) list.push(r); else byForm.set(k, [r]);
+    }
+    if (r.class === "lpLexEntryPara") {
+      if (!rootEntry.has(r.root)) rootEntry.set(r.root, r);
+      for (const k of keys) if (k.length >= 4) headwords.push([k, r]);
+    }
+  }
+  DICT = { byForm, rootEntry, headwords, n: records.length };
+  loadStatus.textContent = `${KEYS.length} verses · dictionary: ${records.length} entries, ${byForm.size} forms`;
+}
+
+fetch(DICT_URL)
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(buildDictIndex)
+  .catch(() => { /* use the file picker */ });
+
+const MAX_DICT_ENTRIES = 8;
+
+function dictEntryHtml(r) {
+  const parent = r.class === "lpLexSubEntryPara" && r.root !== r.root_form
+    ? `<span class="dict-sub">of ${escHtml(r.root)}${DICT.rootEntry.get(r.root)?.chinese ? " · " + escHtml(DICT.rootEntry.get(r.root).chinese) : ""}</span>`
+    : "";
+  let h = `<div class="dict-entry"><div class="dict-head">${escHtml(r.root_form)}${parent}</div>`;
+  if (r.chinese) h += `<div class="dict-gloss">${escHtml(r.chinese)}</div>`;
+  if (r.tao_sentence || r.chinese_sentence) {
+    h += `<div class="dict-ex">${escHtml(r.tao_sentence || "")}` +
+         (r.chinese_sentence ? `<br><span class="zh">${escHtml(r.chinese_sentence)}</span>` : "") + `</div>`;
+  }
+  if (r.source) h += `<div class="dict-src">${escHtml(r.source)}</div>`;
+  return h + `</div>`;
+}
+
+/** HTML for the dictionary section of the popup, for a clicked REF word. */
+function dictLookupHtml(word) {
+  if (!DICT) return `<div class="dict-note">Dictionary not loaded (use “Load files” to choose dictionary_records.json).</div>`;
+  const key = normKey(word);
+  if (!key) return "";
+
+  let hits = DICT.byForm.get(key) || [];
+  let note = "";
+  if (!hits.length) {
+    // No exact headword: suggest entries whose headword occurs inside the word (affixed forms).
+    const seen = new Set();
+    hits = DICT.headwords
+      .filter(([k, r]) => key.includes(k) && !seen.has(r) && seen.add(r))
+      .sort((a, b) => b[0].length - a[0].length)
+      .slice(0, 5).map(([, r]) => r);
+    note = hits.length ? `No exact entry for “${escHtml(key)}”. Possible roots:` : "";
+  }
+  if (!hits.length) return `<div class="dict-note">No dictionary entry for “${escHtml(key)}”.</div>`;
+
+  // headwords before sub-entries, then as listed
+  const ordered = hits.slice().sort((a, b) => (a.class === "lpLexEntryPara" ? 0 : 1) - (b.class === "lpLexEntryPara" ? 0 : 1));
+  let html = note ? `<div class="dict-note">${note}</div>` : "";
+  html += ordered.slice(0, MAX_DICT_ENTRIES).map(dictEntryHtml).join("");
+  if (ordered.length > MAX_DICT_ENTRIES) html += `<div class="dict-note">+${ordered.length - MAX_DICT_ENTRIES} more</div>`;
+  return html;
+}
+
+// ── Word popup ────────────────────────────────────────────────────────────
+const wordPopup = document.getElementById('word-popup');
+
+function showWordPopup(cell) {
+  const side = cell.dataset.side, idx = +cell.dataset.idx;
+  const key = side === "hyp" ? "h" : "r";
+  const otherKey = side === "hyp" ? "r" : "h";
+  const otherCells = side === "hyp" ? RCELLS : HCELLS;
+
+  const others = LINKS.filter(l => l[key] === idx)
+                      .map(l => l[otherKey])
+                      .sort((a, b) => a - b)
+                      .map(j => otherCells[j].textContent);
+  const otherSide = side === "hyp" ? "REF" : "HYP";
+  const row = (label, text) =>
+    `<div class="popup-row"><span class="popup-label">${label}</span><span class="popup-word">${escHtml(text)}</span></div>`;
+
+  wordPopup.innerHTML =
+    row(side.toUpperCase(), cell.textContent) +
+    `<div class="popup-sep"></div>` +
+    row(otherSide, others.join(" ") || "—");
+
+  // Clicking a word in either row also looks it up in the dictionary
+  wordPopup.innerHTML += `<div class="popup-sep"></div>` + dictLookupHtml(cell.textContent);
+  wordPopup.classList.add("scroll");
+  wordPopup.scrollTop = 0;
+  wordPopup.classList.add('active');
+
+  // The popup is position:fixed, so use viewport coordinates. It opens away from the other
+  // row (above a HYP cell, below a REF cell) so it never covers the words it is linked to.
+  const rect = cell.getBoundingClientRect();
+  const w = wordPopup.offsetWidth, h = wordPopup.offsetHeight;
+  let left = Math.min(rect.left, window.innerWidth - w - 8);
+  const above = rect.top - h - 6, below = rect.bottom + 6;
+  const fitsAbove = above >= 8, fitsBelow = below + h <= window.innerHeight - 8;
+  let top = side === "hyp" ? (fitsAbove ? above : below) : (fitsBelow ? below : above);
+  top = Math.max(8, top);
+
+  wordPopup.style.left = Math.max(8, left) + 'px';
+  wordPopup.style.top  = top + 'px';
+}
+
+document.addEventListener('click', e => {
+  if (e.target.closest('#word-popup')) return;   // let the dictionary popup be scrolled and selected
+  const cell = e.target.closest('.tc');
+  if (cell && cell.dataset.side) {
+    e.stopPropagation();
+    showWordPopup(cell);
+  } else {
+    wordPopup.classList.remove('active');
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') wordPopup.classList.remove('active');
+});
+</script>
+</body>
+</html>
