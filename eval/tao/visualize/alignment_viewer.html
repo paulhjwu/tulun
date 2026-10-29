@@ -130,6 +130,8 @@
   /* No counterpart on the other row */
   .tc.hyp.ua { background: #fff59d; border-color: #c8a800; color: #5a4000; font-style: italic; }
   .tc.ref.ua { background: #ffe082; border-color: #c49000; color: #5a3800; font-style: italic; }
+  /* Not found in yami_wordlist.xml: dashed border (colour still shows the alignment state) */
+  .tc.oov { border-style: dashed; border-width: 2px; padding: 4px 8px; }
 
   /* ── Links ── */
   .lk { fill: none; stroke-width: 1.6; stroke-linecap: round; opacity: 0.75; transition: opacity 0.1s; }
@@ -151,6 +153,11 @@
   .sw-diff   { background: #fdebd8; border-color: #e8a878; }
   .sw-ua-hyp   { background: #fff59d; border-color: #c8a800; }
   .sw-ua-ref   { background: #ffe082; border-color: #c49000; }
+  .sw-oov      { background: #fffdf8; border: 2px dashed #7a6040; }
+
+  .seg-section { margin-top: 36px; padding-top: 24px; border-top: 1px solid #ddd0b8; }
+  .seg-note { font-size: 0.85rem; color: #9a7a50; font-style: italic; margin-bottom: 8px; }
+  .tc.hyp.zh { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
 
   #no-verse { color: #9a7a50; font-style: italic; }
 
@@ -202,7 +209,7 @@
   <button id="btn-prev" title="Previous verse">&#x25C0;</button>
   <button id="btn-next" title="Next verse">&#x25B6;</button>
   <label for="file-input">Load files</label>
-  <input type="file" id="file-input" accept=".json,.txt" multiple title="alignment_parallel.json, dictionary_records.json, Jonah.txt, Ruth.txt">
+  <input type="file" id="file-input" accept=".json,.txt,.xml" multiple title="alignment_parallel.json, alignment_parallel_seg.json, dictionary_records.json, yami_wordlist.xml, Jonah.txt, Ruth.txt">
   <span id="load-status"></span>
 </div>
 
@@ -240,6 +247,15 @@
         <div class="legend-item"><div class="legend-swatch sw-diff"></div>Different</div>
         <div class="legend-item"><div class="legend-swatch sw-ua-hyp"></div>HYP unaligned</div>
         <div class="legend-item"><div class="legend-swatch sw-ua-ref"></div>REF unaligned</div>
+        <div class="legend-item"><div class="legend-swatch sw-oov"></div>Dashed: Tao word not in yami_wordlist.xml</div>
+      </div>
+    </div>
+
+    <div class="tape-section seg-section">
+      <h3>Word Alignment, segmented <span style="text-transform:none;letter-spacing:0;font-weight:normal">· REF (Chang) vs. HYP = segmented Chinese C · from alignment_parallel_seg.json</span></h3>
+      <div id="seg-note" class="seg-note"></div>
+      <div class="tapes-outer">
+        <div id="tapes-grid-seg" class="tapes"></div>
       </div>
     </div>
   </div>
@@ -249,12 +265,12 @@
 
 <script>
 let DATA = {};
+let DATA_SEG = {};   // alignment_parallel_seg.json, same keys as DATA
 let KEYS = [];
 
 const selVerse     = document.getElementById("sel-verse");
 const noVerse      = document.getElementById("no-verse");
 const verseContent = document.getElementById("verse-content");
-const tapesGrid    = document.getElementById("tapes-grid");
 const loadStatus   = document.getElementById("load-status");
 
 function label(key, i) {
@@ -341,9 +357,11 @@ document.getElementById("file-input").addEventListener("change", async e => {
   try {
     for (const f of e.target.files) {
       const text = await f.text();
-      if (/\.json$/i.test(f.name)) {
+      if (/\.xml$/i.test(f.name)) buildWordlist(text);       // yami_wordlist.xml
+      else if (/\.json$/i.test(f.name)) {
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed)) buildDictIndex(parsed);   // dictionary_records.json
+        else if (/_seg/i.test(f.name)) { DATA_SEG = parsed; }  // alignment_parallel_seg.json
         else loadData(parsed);                              // alignment_parallel.json
       }
       else parseSource(f.name.replace(/\.txt$/i, ""), text);
@@ -362,6 +380,11 @@ fetch("alignment_parallel.json")
     noVerse.textContent = "Could not fetch alignment_parallel.json. Use “Load files” above to choose it (also Jonah.txt and Ruth.txt).";
   });
 
+fetch("alignment_parallel_seg.json")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => { DATA_SEG = d; rerender(); })
+  .catch(() => { /* use the file picker */ });
+
 document.addEventListener("keydown", e => {
   if (e.target.matches("input, select")) return;
   if (e.key === "ArrowLeft")  step(-1);
@@ -371,8 +394,14 @@ document.addEventListener("keydown", e => {
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// Current verse: LINKS = [{h, r, cls, path}], HCELLS / RCELLS = token cells in word order
-let LINKS = [], HCELLS = [], RCELLS = [];
+// Each alignment tape is a "panel": links = [{h, r, cls, path}], hcells / rcells = token cells in
+// word order. hypTao says whether the HYP row is Tao text (checked against the wordlist and the
+// dictionary) or segmented Chinese.
+function makePanel(gridId, hypTao) {
+  return { grid: document.getElementById(gridId), hypTao, links: [], hcells: [], rcells: [] };
+}
+const PANELS = [makePanel("tapes-grid", true), makePanel("tapes-grid-seg", false)];
+const panelOf = node => PANELS.find(p => p.grid.contains(node));
 
 const normWord = w => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
@@ -400,7 +429,7 @@ function buildLinks(entry, hypTokens, refTokens) {
   return links;
 }
 
-function makeRow(side, tokens, links) {
+function makeRow(side, tokens, links, checkWords) {
   const row = el("div", "tape-row");
   const ptr = el("div", "tape-ptr");
   ptr.innerHTML = side.toUpperCase() + " <span class='arrow'></span>";
@@ -409,7 +438,7 @@ function makeRow(side, tokens, links) {
   const cells = tokens.map((w, i) => {
     const mine = links.filter(l => l[key] === i);
     const cls = !mine.length ? "ua" : mine.some(l => l.cls === "exact") ? "exact" : "diff";
-    const c = el("div", `tc ${side} ${cls}`, w);
+    const c = el("div", `tc ${side} ${cls}${checkWords && isUnknownWord(w) ? " oov" : ""}${side === "hyp" && !checkWords ? " zh" : ""}`, w);
     c.dataset.side = side;
     c.dataset.idx  = i;
     row.appendChild(c);
@@ -418,37 +447,63 @@ function makeRow(side, tokens, links) {
   return { row, cells };
 }
 
-function drawLinks() {
-  const svg = tapesGrid.querySelector("svg");
-  if (!svg || !LINKS.length && !HCELLS.length) return;
-  const box = tapesGrid.getBoundingClientRect();
+function drawLinks(p) {
+  const svg = p.grid.querySelector("svg");
+  if (!svg || !p.links.length && !p.hcells.length) return;
+  const box = p.grid.getBoundingClientRect();
   const H = svg.getBoundingClientRect().height;
-  svg.setAttribute("width", tapesGrid.scrollWidth);
-  for (const l of LINKS) {
-    const a = HCELLS[l.h].getBoundingClientRect();
-    const b = RCELLS[l.r].getBoundingClientRect();
+  svg.setAttribute("width", p.grid.scrollWidth);
+  for (const l of p.links) {
+    const a = p.hcells[l.h].getBoundingClientRect();
+    const b = p.rcells[l.r].getBoundingClientRect();
     const x1 = a.left + a.width / 2 - box.left;
     const x2 = b.left + b.width / 2 - box.left;
     l.path.setAttribute("d", `M ${x1} 0 C ${x1} ${H * 0.55}, ${x2} ${H * 0.45}, ${x2} ${H}`);
   }
 }
+const drawAll = () => PANELS.forEach(drawLinks);
 
-function highlight(cell) {
+function highlight(p, cell) {
   const side = cell.dataset.side, idx = +cell.dataset.idx;
   const key = side === "hyp" ? "h" : "r";
-  const mine = LINKS.filter(l => l[key] === idx);
-  tapesGrid.classList.add("hovering");
+  const mine = p.links.filter(l => l[key] === idx);
+  p.grid.classList.add("hovering");
   cell.classList.add("hl");
   for (const l of mine) {
     l.path.classList.add("hl");
-    HCELLS[l.h].classList.add("hl");
-    RCELLS[l.r].classList.add("hl");
+    p.hcells[l.h].classList.add("hl");
+    p.rcells[l.r].classList.add("hl");
   }
 }
-function clearHighlight() {
-  tapesGrid.classList.remove("hovering");
-  tapesGrid.querySelectorAll(".hl").forEach(n => n.classList.remove("hl"));
-  for (const l of LINKS) l.path.classList.remove("hl");
+function clearHighlight(p) {
+  p.grid.classList.remove("hovering");
+  p.grid.querySelectorAll(".hl").forEach(n => n.classList.remove("hl"));
+  for (const l of p.links) l.path.classList.remove("hl");
+}
+
+/** Draw one tape for `entry` (ref/hyp/alignments) into panel p. */
+function renderPanel(p, entry) {
+  const hypTokens = (entry.hyp || "").split(/\s+/).filter(Boolean);
+  const refTokens = (entry.ref || "").split(/\s+/).filter(Boolean);
+  const links = buildLinks(entry, hypTokens, refTokens);
+
+  const hypRow = makeRow("hyp", hypTokens, links, p.hypTao);
+  const refRow = makeRow("ref", refTokens, links, true);
+  p.hcells = hypRow.cells;
+  p.rcells = refRow.cells;
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "tape-links");
+  p.links = links.map(l => {
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("class", "lk " + l.cls);
+    svg.appendChild(path);
+    return { ...l, path };
+  });
+
+  p.grid.innerHTML = "";
+  p.grid.classList.remove("hovering");
+  p.grid.append(hypRow.row, svg, refRow.row);
 }
 
 function render(key) {
@@ -461,43 +516,33 @@ function render(key) {
   document.getElementById("sent-ref").textContent = entry.ref || "";
   document.getElementById("sent-hyp").textContent = entry.hyp || "";
 
-  const hypTokens = (entry.hyp || "").split(/\s+/).filter(Boolean);
-  const refTokens = (entry.ref || "").split(/\s+/).filter(Boolean);
-  const links = buildLinks(entry, hypTokens, refTokens);
+  renderPanel(PANELS[0], entry);
 
-  const hypRow = makeRow("hyp", hypTokens, links);
-  const refRow = makeRow("ref", refTokens, links);
-  HCELLS = hypRow.cells;
-  RCELLS = refRow.cells;
-
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("class", "tape-links");
-  LINKS = links.map(l => {
-    const path = document.createElementNS(SVG_NS, "path");
-    path.setAttribute("class", "lk " + l.cls);
-    svg.appendChild(path);
-    return { ...l, path };
-  });
-
-  tapesGrid.innerHTML = "";
-  tapesGrid.classList.remove("hovering");
-  tapesGrid.append(hypRow.row, svg, refRow.row);
+  const seg = DATA_SEG[key];
+  const segPanel = PANELS[1];
+  document.getElementById("seg-note").textContent = seg ? "" :
+    Object.keys(DATA_SEG).length ? "This verse is not in alignment_parallel_seg.json."
+                                 : "alignment_parallel_seg.json is not loaded (use “Load files”).";
+  if (seg) renderPanel(segPanel, seg);
+  else { segPanel.grid.innerHTML = ""; segPanel.links = []; segPanel.hcells = []; segPanel.rcells = []; }
 
   noVerse.style.display = "none";
   verseContent.style.display = "";
-  drawLinks();
+  drawAll();
 }
 
-tapesGrid.addEventListener("mouseover", e => {
-  const cell = e.target.closest(".tc");
-  clearHighlight();
-  if (cell) highlight(cell);
+PANELS.forEach(p => {
+  p.grid.addEventListener("mouseover", e => {
+    const cell = e.target.closest(".tc");
+    clearHighlight(p);
+    if (cell) highlight(p, cell);
+  });
+  p.grid.addEventListener("mouseleave", () => clearHighlight(p));
 });
-tapesGrid.addEventListener("mouseleave", clearHighlight);
 
-window.addEventListener("resize", drawLinks);
+window.addEventListener("resize", drawAll);
 window.addEventListener("scroll", () => wordPopup.classList.remove("active"));
-if (document.fonts?.ready) document.fonts.ready.then(drawLinks);
+if (document.fonts?.ready) document.fonts.ready.then(drawAll);
 
 // ── Dictionary (dictionary_records.json) ──────────────────────────────────
 // Hash table built once at load: normalized form -> records whose root_form contains it.
@@ -508,6 +553,34 @@ const DICT_URL = "../dict/dictionary_records.json";
 
 const EDGE_PUNCT = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
 const normKey = w => w.normalize("NFC").toLowerCase().replace(EDGE_PUNCT, "");
+
+// ── Word list (yami_wordlist.xml) ─────────────────────────────────────────
+// WORDLIST holds the lower-cased `word` attribute of every <item>. A token that is not in it
+// is drawn with a dashed border. Tokens with no letters (":", "[3]") are not words and stay solid.
+let WORDLIST = null;
+const WORDLIST_URL = "../dict/yami_wordlist.xml";
+
+function buildWordlist(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+  if (doc.querySelector("parsererror")) throw new Error("yami_wordlist.xml is not valid XML");
+  WORDLIST = new Set();
+  for (const it of doc.getElementsByTagName("item")) {
+    const w = it.getAttribute("word");
+    if (w) WORDLIST.add(w.normalize("NFC").toLowerCase());
+  }
+  rerender();
+}
+
+function isUnknownWord(token) {
+  if (!WORDLIST) return false;               // list not loaded: do not flag anything
+  const k = normKey(token);
+  return /\p{L}/u.test(k) && !WORDLIST.has(k);
+}
+
+fetch(WORDLIST_URL)
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(buildWordlist)
+  .catch(() => { /* use the file picker */ });
 
 function formKeys(rootForm) {
   const parts = rootForm.replace(/\([^)]*\)/g, " ").split(/[\s~,;/=]+/);
@@ -583,12 +656,13 @@ function dictLookupHtml(word) {
 const wordPopup = document.getElementById('word-popup');
 
 function showWordPopup(cell) {
+  const p = panelOf(cell);
   const side = cell.dataset.side, idx = +cell.dataset.idx;
   const key = side === "hyp" ? "h" : "r";
   const otherKey = side === "hyp" ? "r" : "h";
-  const otherCells = side === "hyp" ? RCELLS : HCELLS;
+  const otherCells = side === "hyp" ? p.rcells : p.hcells;
 
-  const others = LINKS.filter(l => l[key] === idx)
+  const others = p.links.filter(l => l[key] === idx)
                       .map(l => l[otherKey])
                       .sort((a, b) => a - b)
                       .map(j => otherCells[j].textContent);
@@ -601,8 +675,8 @@ function showWordPopup(cell) {
     `<div class="popup-sep"></div>` +
     row(otherSide, others.join(" ") || "—");
 
-  // Clicking a word in either row also looks it up in the dictionary
-  wordPopup.innerHTML += `<div class="popup-sep"></div>` + dictLookupHtml(cell.textContent);
+  // Clicking a Tao word also looks it up in the dictionary (not the segmented Chinese row)
+  if (side === "ref" || p.hypTao) wordPopup.innerHTML += `<div class="popup-sep"></div>` + dictLookupHtml(cell.textContent);
   wordPopup.classList.add("scroll");
   wordPopup.scrollTop = 0;
   wordPopup.classList.add('active');
