@@ -153,9 +153,34 @@
   .sw-diff   { background: #fdebd8; border-color: #e8a878; }
   .sw-ua-hyp   { background: #fff59d; border-color: #c8a800; }
   .sw-ua-ref   { background: #ffe082; border-color: #c49000; }
+  .sw-collapsed { background: #111; border-color: #000; }
   .sw-oov      { background: #fffdf8; border: 2px dashed #7a6040; }
 
-  .seg-section { margin-top: 36px; padding-top: 24px; border-top: 1px solid #ddd0b8; }
+  .tape-section + .tape-section { margin-top: 36px; padding-top: 24px; border-top: 1px solid #ddd0b8; }
+  .tape-section[hidden] { display: none; }
+  .legend { margin-top: 28px; }
+
+  /* ── Tape dials (toggle which tapes are shown) ── */
+  .dials { display: flex; align-items: center; gap: 8px; }
+  .dial {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 0.85rem; color: #7a6040;
+    padding: 5px 12px 5px 8px; border: 1px solid #c8b89a; border-radius: 16px;
+    background: #fffdf8; cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .dial:hover { background: #f0e8d8; }
+  .dial .knob {
+    width: 26px; height: 14px; border-radius: 7px; background: #d9cdb6; position: relative;
+    transition: background 0.15s; flex-shrink: 0;
+  }
+  .dial .knob::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px;
+    border-radius: 50%; background: #fffdf8; transition: left 0.15s;
+  }
+  .dial[aria-pressed="true"] { color: #5a3e1b; border-color: #c8903a; }
+  .dial[aria-pressed="true"] .knob { background: #c8903a; }
+  .dial[aria-pressed="true"] .knob::after { left: 14px; }
+  .h3-sub { text-transform: none; letter-spacing: 0; font-weight: normal; }
   .seg-note { font-size: 0.85rem; color: #9a7a50; font-style: italic; margin-bottom: 8px; }
   .tc.hyp.zh { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
 
@@ -164,6 +189,15 @@
   /* ── Clickable tape cells ── */
   .tc { cursor: pointer; }
   .tc:hover { filter: brightness(0.93); }
+
+  /* ── Collapsed run of unaligned HYP tokens ── */
+  .tc.collapsed { display: none; }
+  .chip {
+    padding: 5px 9px; border: 1px solid #000; border-radius: 3px;
+    background: #111; color: #f5f2eb; font-size: 0.88rem; white-space: nowrap;
+    cursor: pointer; user-select: none; min-width: 36px; text-align: center;
+  }
+  .chip:hover { background: #333; }
 
   /* ── Word popup ── */
   .word-popup {
@@ -208,8 +242,14 @@
   <select id="sel-verse" disabled><option value="">—</option></select>
   <button id="btn-prev" title="Previous verse">&#x25C0;</button>
   <button id="btn-next" title="Next verse">&#x25B6;</button>
+  <div class="dials" role="group" aria-label="Show alignment tapes">
+    <label>Tapes</label>
+    <button class="dial" data-panel="tao" aria-pressed="true" title="Show/hide the CUNP89T tape"><span class="knob"></span>CUNP89T</button>
+    <button class="dial" data-panel="seg" aria-pressed="true" title="Show/hide the segmented Chinese tape"><span class="knob"></span>Chinese seg</button>
+    <button class="dial" data-panel="niv" aria-pressed="true" title="Show/hide the NIV tape"><span class="knob"></span>NIV</button>
+  </div>
   <label for="file-input">Load files</label>
-  <input type="file" id="file-input" accept=".json,.txt,.xml" multiple title="alignment_parallel.json, alignment_parallel_seg.json, dictionary_records.json, yami_wordlist.xml, Jonah.txt, Ruth.txt">
+  <input type="file" id="file-input" accept=".json,.txt,.xml" multiple title="alignment_parallel.json, alignment_parallel_seg.json, alignment_parallel_niv.json, dictionary_records.json, yami_wordlist.xml, Jonah.txt, Ruth.txt">
   <span id="load-status"></span>
 </div>
 
@@ -237,26 +277,37 @@
       </div>
     </div>
 
-    <div class="tape-section">
-      <h3>Word Alignment <span style="text-transform:none;letter-spacing:0;font-weight:normal">· each row keeps its own word order; hover a word to highlight its links, click for details</span></h3>
+    <div class="tape-section" id="sec-tao">
+      <h3>Word Alignment <span class="h3-sub">· REF (Chang) vs. HYP (CUNP89T) · each row keeps its own word order; hover a word to highlight its links, click for details</span></h3>
+      <div id="note-tao" class="seg-note"></div>
       <div class="tapes-outer">
-        <div id="tapes-grid" class="tapes"></div>
-      </div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-swatch sw-exact"></div>Identical</div>
-        <div class="legend-item"><div class="legend-swatch sw-diff"></div>Different</div>
-        <div class="legend-item"><div class="legend-swatch sw-ua-hyp"></div>HYP unaligned</div>
-        <div class="legend-item"><div class="legend-swatch sw-ua-ref"></div>REF unaligned</div>
-        <div class="legend-item"><div class="legend-swatch sw-oov"></div>Dashed: Tao word not in yami_wordlist.xml</div>
+        <div id="tapes-grid-tao" class="tapes"></div>
       </div>
     </div>
 
-    <div class="tape-section seg-section">
-      <h3>Word Alignment, segmented <span style="text-transform:none;letter-spacing:0;font-weight:normal">· REF (Chang) vs. HYP = segmented Chinese C · from alignment_parallel_seg.json</span></h3>
-      <div id="seg-note" class="seg-note"></div>
+    <div class="tape-section" id="sec-seg">
+      <h3>Word Alignment, segmented <span class="h3-sub">· REF (Chang) vs. HYP = segmented Chinese C · from alignment_parallel_seg.json</span></h3>
+      <div id="note-seg" class="seg-note"></div>
       <div class="tapes-outer">
         <div id="tapes-grid-seg" class="tapes"></div>
       </div>
+    </div>
+
+    <div class="tape-section" id="sec-niv">
+      <h3>Word Alignment, NIV <span class="h3-sub">· REF (Chang) vs. HYP = NIV English · from alignment_parallel_niv.json</span></h3>
+      <div id="note-niv" class="seg-note"></div>
+      <div class="tapes-outer">
+        <div id="tapes-grid-niv" class="tapes"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch sw-exact"></div>Identical</div>
+      <div class="legend-item"><div class="legend-swatch sw-diff"></div>Different</div>
+      <div class="legend-item"><div class="legend-swatch sw-ua-hyp"></div>HYP unaligned</div>
+      <div class="legend-item"><div class="legend-swatch sw-ua-ref"></div>REF unaligned</div>
+      <div class="legend-item"><div class="legend-swatch sw-oov"></div>Dashed: Tao word not in yami_wordlist.xml</div>
+      <div class="legend-item"><div class="legend-swatch sw-collapsed"></div>Click a HYP unaligned word to collapse its run; click the black box to expand</div>
     </div>
   </div>
 </div>
@@ -266,6 +317,7 @@
 <script>
 let DATA = {};
 let DATA_SEG = {};   // alignment_parallel_seg.json, same keys as DATA
+let DATA_NIV = {};   // alignment_parallel_niv.json, same keys as DATA
 let KEYS = [];
 
 const selVerse     = document.getElementById("sel-verse");
@@ -362,6 +414,7 @@ document.getElementById("file-input").addEventListener("change", async e => {
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed)) buildDictIndex(parsed);   // dictionary_records.json
         else if (/_seg/i.test(f.name)) { DATA_SEG = parsed; }  // alignment_parallel_seg.json
+        else if (/_niv/i.test(f.name)) { DATA_NIV = parsed; }  // alignment_parallel_niv.json
         else loadData(parsed);                              // alignment_parallel.json
       }
       else parseSource(f.name.replace(/\.txt$/i, ""), text);
@@ -380,10 +433,12 @@ fetch("alignment_parallel.json")
     noVerse.textContent = "Could not fetch alignment_parallel.json. Use “Load files” above to choose it (also Jonah.txt and Ruth.txt).";
   });
 
-fetch("alignment_parallel_seg.json")
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => { DATA_SEG = d; rerender(); })
-  .catch(() => { /* use the file picker */ });
+[["alignment_parallel_seg.json", d => { DATA_SEG = d; }],
+ ["alignment_parallel_niv.json", d => { DATA_NIV = d; }]].forEach(([url, set]) =>
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { set(d); rerender(); })
+    .catch(() => { /* use the file picker */ }));
 
 document.addEventListener("keydown", e => {
   if (e.target.matches("input, select")) return;
@@ -395,12 +450,22 @@ document.addEventListener("keydown", e => {
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 // Each alignment tape is a "panel": links = [{h, r, cls, path}], hcells / rcells = token cells in
-// word order. hypTao says whether the HYP row is Tao text (checked against the wordlist and the
-// dictionary) or segmented Chinese.
-function makePanel(gridId, hypTao) {
-  return { grid: document.getElementById(gridId), hypTao, links: [], hcells: [], rcells: [] };
+// word order. kind says what the HYP row holds: "tao" (checked against the wordlist and the
+// dictionary), "zh" (segmented Chinese) or "en" (English). `data` returns that tape's JSON.
+function makePanel(id, kind, file, data) {
+  return {
+    id, kind, file, data, hypTao: kind === "tao", visible: true,
+    grid: document.getElementById("tapes-grid-" + id),
+    section: document.getElementById("sec-" + id),
+    note: document.getElementById("note-" + id),
+    links: [], hcells: [], rcells: [],
+  };
 }
-const PANELS = [makePanel("tapes-grid", true), makePanel("tapes-grid-seg", false)];
+const PANELS = [
+  makePanel("tao", "tao", "alignment_parallel.json",     () => DATA),
+  makePanel("seg", "zh",  "alignment_parallel_seg.json", () => DATA_SEG),
+  makePanel("niv", "en",  "alignment_parallel_niv.json", () => DATA_NIV),
+];
 const panelOf = node => PANELS.find(p => p.grid.contains(node));
 
 const normWord = w => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
@@ -429,7 +494,7 @@ function buildLinks(entry, hypTokens, refTokens) {
   return links;
 }
 
-function makeRow(side, tokens, links, checkWords) {
+function makeRow(side, tokens, links, checkWords, zh) {
   const row = el("div", "tape-row");
   const ptr = el("div", "tape-ptr");
   ptr.innerHTML = side.toUpperCase() + " <span class='arrow'></span>";
@@ -438,7 +503,7 @@ function makeRow(side, tokens, links, checkWords) {
   const cells = tokens.map((w, i) => {
     const mine = links.filter(l => l[key] === i);
     const cls = !mine.length ? "ua" : mine.some(l => l.cls === "exact") ? "exact" : "diff";
-    const c = el("div", `tc ${side} ${cls}${checkWords && isUnknownWord(w) ? " oov" : ""}${side === "hyp" && !checkWords ? " zh" : ""}`, w);
+    const c = el("div", `tc ${side} ${cls}${checkWords && isUnknownWord(w) ? " oov" : ""}${zh ? " zh" : ""}`, w);
     c.dataset.side = side;
     c.dataset.idx  = i;
     row.appendChild(c);
@@ -487,7 +552,7 @@ function renderPanel(p, entry) {
   const refTokens = (entry.ref || "").split(/\s+/).filter(Boolean);
   const links = buildLinks(entry, hypTokens, refTokens);
 
-  const hypRow = makeRow("hyp", hypTokens, links, p.hypTao);
+  const hypRow = makeRow("hyp", hypTokens, links, p.hypTao, p.kind === "zh");
   const refRow = makeRow("ref", refTokens, links, true);
   p.hcells = hypRow.cells;
   p.rcells = refRow.cells;
@@ -516,20 +581,31 @@ function render(key) {
   document.getElementById("sent-ref").textContent = entry.ref || "";
   document.getElementById("sent-hyp").textContent = entry.hyp || "";
 
-  renderPanel(PANELS[0], entry);
-
-  const seg = DATA_SEG[key];
-  const segPanel = PANELS[1];
-  document.getElementById("seg-note").textContent = seg ? "" :
-    Object.keys(DATA_SEG).length ? "This verse is not in alignment_parallel_seg.json."
-                                 : "alignment_parallel_seg.json is not loaded (use “Load files”).";
-  if (seg) renderPanel(segPanel, seg);
-  else { segPanel.grid.innerHTML = ""; segPanel.links = []; segPanel.hcells = []; segPanel.rcells = []; }
+  for (const p of PANELS) {
+    const data = p.data();
+    const e = data[key];
+    p.note.textContent = e ? "" :
+      Object.keys(data).length ? `This verse is not in ${p.file}.`
+                               : `${p.file} is not loaded (use “Load files”).`;
+    if (e) renderPanel(p, e);
+    else { p.grid.innerHTML = ""; p.links = []; p.hcells = []; p.rcells = []; }
+  }
 
   noVerse.style.display = "none";
   verseContent.style.display = "";
   drawAll();
 }
+
+document.querySelectorAll(".dial").forEach(btn => {
+  const p = PANELS.find(q => q.id === btn.dataset.panel);
+  btn.addEventListener("click", () => {
+    p.visible = !p.visible;
+    btn.setAttribute("aria-pressed", p.visible);
+    p.section.hidden = !p.visible;
+    wordPopup.classList.remove("active");
+    drawAll();          // links need the section laid out before they can be drawn
+  });
+});
 
 PANELS.forEach(p => {
   p.grid.addEventListener("mouseover", e => {
@@ -695,9 +771,36 @@ function showWordPopup(cell) {
   wordPopup.style.top  = top + 'px';
 }
 
+/** Collapse the run of consecutive unaligned HYP tokens containing `cell` into one black box. */
+function collapseRun(p, cell) {
+  const cells = p.hcells, i = +cell.dataset.idx;
+  const ua = c => c.classList.contains("ua");
+  let a = i, b = i;
+  while (a > 0 && ua(cells[a - 1])) a--;
+  while (b < cells.length - 1 && ua(cells[b + 1])) b++;
+  const run = cells.slice(a, b + 1);
+  const chip = el("div", "chip", b > a ? `■ ${run.length} words` : "■");
+  chip.title = run.map(c => c.textContent).join(" ") + "  (click to expand)";
+  run.forEach(c => c.classList.add("collapsed"));
+  chip.addEventListener("click", ev => {
+    ev.stopPropagation();
+    run.forEach(c => c.classList.remove("collapsed"));
+    chip.remove();
+    drawLinks(p);
+  });
+  cells[a].before(chip);
+  drawLinks(p);          // the remaining words moved, so the links must follow
+}
+
 document.addEventListener('click', e => {
   if (e.target.closest('#word-popup')) return;   // let the dictionary popup be scrolled and selected
+  if (e.target.closest('.chip')) { wordPopup.classList.remove('active'); return; }   // the chip handles itself
   const cell = e.target.closest('.tc');
+  if (cell && cell.dataset.side === "hyp" && cell.classList.contains("ua")) {
+    wordPopup.classList.remove('active');
+    collapseRun(panelOf(cell), cell);
+    return;
+  }
   if (cell && cell.dataset.side) {
     e.stopPropagation();
     showWordPopup(cell);
