@@ -1,15 +1,92 @@
 ﻿root_form
+'a'a
+'ab
+'abak
+'adpet
+'agnat
+'akaw
+'akeb
+'ama
+'amang
+'an'an
+'anang
+'aneng
+'ang'ang
+'anga
+'angin
+'angno
+'angop
+'angsak
+'anit
+'apet
+'ara
+'arag
+'atas
+'atay
+'avas
+'avit
+'awa
+'awang
+'ayo
+'ema
+'emes
+'enep
+'eni
+'ep
+'ep'ep
+'era'ed
+'eseb
+'esep
+'etaw
+'etek
+'evek
+'eza
+'ezsad
+'ingen
+'inin
+'it'itkehan
+'iteng
+'itkeh
+'itkehan
+'izay
+'ogto
+'okso
+'oli
+'onag
+'ong'ong
+'oo
+'opag
+'opta
+'oran
+'orod
+'osok
+'ota
+'otab
+'oto
+'otwan
+'ovay
+'oya
+'ozoz
+'wakwak
+'yangaw
+'yapet
+'yavayo
+'yaw
+'yoba
+'yoman
+'yora
+'yoyo
 -blis
 -bneng
 -dpang
--dwa ~rwa
--gnoz ~gonoz
+-dwa
+-gnoz
 -kdeng
 -kma
 -ksoz
 -kta
--kto ~akto
--ktokto ~aktokto
+-kto
+-ktokto
 -ktoktow
 -kwa
 -kwan
@@ -17,88 +94,90 @@
 -kwat
 -kyokay
 -kza
--lma ~lema
+-lma
 -lwas
--lyo ~alyo
+-lyo
 -lyos
 -mway
 -nngo
 -pka
 -plin
--pnezak ~apnezak
--psa ~apsa
--psek ~apsek
--pseng ~apseng
--ptad ~aptad
--pteng ~apteng
--ryag ~aryag
+-pnezak
+-psa
+-psek
+-pseng
+-ptad
+-pteng
+-ryag
 -sbang
--sdep ~asdep
+-sdep
 -skad
 -spa
--spang ~aspang
--spi ~aspi
+-spang
+-spi
 -tba
--tbod ~atbod
+-tbod
 -tbok
 -tbong
 -tbos
 -tjip
 -tlen
--tlo ~atlo
+-tlo
 -tnaw
 -tneb
 -tnek
 -tnga
--tpeh ~tepeh
+-tpeh
 -twaw
 -vwak
 -zbak
 -zday
--zkem ~azkem
+-zkem
 -zsi
 -zyak
 -zyod
-abeywan ~beywan
+ab'es
+abeywan
 abhebhesi (to)
-abhes ~ab'es
+abhes
 ablis (ji)
 ablisan (kaji)
 ablisi (ji)
-abnek ~bnek
+abnek
 abneka (ji)
 abneka (to)
 abneki (ji)
 abong
-absoy ~bsoy
-abwang ~bwang
-abzot ~bzot
-ab來源: ~b來源:
+absoy
+abwang
+abzot
+ab來源:
 aci
 acileb
 acyang
-acyey ~acyay
+acyay
+acyey
 adagdag
 aday
 adkan
 adkeci (ji)
-adket ~dket
+adket
 admay
-adna ~dna
-adnet ~dnet
+adna
+adnet
 adon
-adpeh ~dpeh
+adpeh
 adpes
 agag (ji)
+agamo
 aganas
 agaz
-agcin ~gcin
 agid
-aglaw ~glaw
+aglaw
 aglawan (kaji)
 agom
-agsah ~gesah
-agza ~gza
+agsah
+agza
 ahah
 ahanas
 ahas
@@ -108,14 +187,14 @@ ahayo (ji)
 ahayo (to)
 ahen
 ahes
-aid ~id
+aid
 aing
 ait
-akas ~hekas
+akan
+akas
 akasan (kaji)
-akay ~hakay
-akcil ~kcil
-akcin ~kcin ~kecin
+akcil
+akcin
 akdaw
 akehang (to)
 akey
@@ -124,8 +203,9 @@ akmanan (kato)
 akmani (to)
 aknam
 aknata
-akpeh ~kpeh
-akteb ~kteb
+akpeh
+akteb
+akto
 aktoktoi (ji)
 aktoktwan (ji)
 akwan (ji)
@@ -134,7 +214,6 @@ akzan (ji)
 alak
 alalam
 alam
-alam ~allam
 alap
 alas
 alasan (kaji)
@@ -144,21 +223,24 @@ alavat (ji)
 alaw (ji)
 alawan (ji)
 alawi (ji)
-alikey ~likey
 alilima
 alingongaw
 alipenpen
 alipetpet
+alis
+allam
 alolog
 alpid
+alyo
 alyolwen
+am'ing
+am'iteng
 amaog (ji)
 amaogan (kaji)
 amez
 ami
 amil
-aming ~am'ing
-amiteng ~am'iteng
+aming
 amizing (ji)
 amizing (to)
 amiznga (ji)
@@ -200,8 +282,9 @@ angned so ninyakan (ji)
 angnedan no ninyakan (kaji)
 angongoyod
 angot
-angsah ~angseh
+angsah
 angsahan (kaji)
+angseh
 angyaki (ji)
 anig
 anigan (ji)
@@ -231,17 +314,21 @@ apeyyopowpas
 apid
 apis
 apit
-apiya ~piya
 apodaro
 apoi (to)
 apon
 aponged
+apsa
+apsek
+apseng
+aptad
+apteng
 apyai (to)
 apyan (ji)
 apyan (kaji)
 apyan (kato)
 apzaci (ji)
-apzat  ~pzat
+apzat
 apzatan (kaji)
 ar'is
 arai
@@ -252,27 +339,29 @@ arilawan (ji)
 arilawan (to)
 arios
 aripasalaw
-aro ~araw
 arog
 arok
+aryag
 aryarilawan (kaji)
 asad
-asleb ~sleb
-aslet ~slet
+asdep
+asleb
 asnek (ji)
 asneki (ji)
-asngen ~sngen
+asngen
 asoy
+aspang
+aspi
 asyan (ji)
 asyan (to)
 atatay
-atay ~hatay
+atay
 atdes
 ates
 atken
+atonton
 atop
 atovang
-attaw ~hataw
 avak no ahep
 avak no ahep.
 avat
@@ -282,7 +371,6 @@ aven
 aving
 avong
 avyai (ji)
-avyay ~vyay
 avyayan (kaji)
 avyayan (kato)
 avyot
@@ -291,6 +379,7 @@ awaw (ji)
 awawa
 awawi (ji)
 ayoma
+ayop
 aza (ji)
 azab (ji)
 azabab
@@ -298,11 +387,14 @@ azabab (ji)
 azababan (ji)
 azat
 azid
+azikaz
 azikenken
 aziman
 azizazaw
+azkem
 azong
-azway ~zway
+azovo
+azway
 azwayan (kaji)
 azwazwaya (ji)
 azwazwayan (kaji)
@@ -328,7 +420,11 @@ bokbok
 bonbon (ji)
 bonboni (ji)
 botbota (to a-)
+bsoy
 bsoyan (ji)
+bwang
+bzot
+b來源:
 cibcib
 cici
 cicilat
@@ -336,9 +432,9 @@ cicin
 cicinda
 cicit
 cigi
-cigzang ~tigzang
+cigzang
 cikad
-cikap ~tikap
+cikap
 cikcik
 cilat
 cilcil
@@ -350,23 +446,28 @@ cinon
 cipa
 cipas
 cirawat
-ciray ~tiray
+ciray
 ciscis
-cita ~tita
-citwai ~citai
+citai
+citwai
 civang
 civet
 criciring
 cyak
 cyocyow
+cyok
 dada (ji a-)
 dadkeci (ji)
 dakzan (ji)
 dangdang
 dangdangan (kaji a-)
 dasnekan (kaji)
+dket
+dna
+dnet
 dokdok
 dondon
+dpeh
 eteng
 gacigaci (ji)
 gacigaci (to)
@@ -375,14 +476,17 @@ gaga
 gagaling
 gagidan (to a-)
 galagal
-gamo ~agamo
+gamo
 ganazegez
 ganinem
 gazagaz
 gazicigit
+gcin
+gesah
 getget
 giji (ji a-)
 gilo
+glaw
 gogad
 gogadan (ji)
 gogaji (ji)
@@ -390,70 +494,60 @@ golgol
 golo
 gonagonay (ji a-)
 gonay
+gonoz
 gorogod
 goyon
-hab ~'ab
-habak ~'abak
-hadpet ~'adpet
-hagnat ~'agnat
+gza
+hab
+habak
+hadpet
+hagnat
 haha (ji a-)
-haha ~'a'a
 hakaw (ji)
-hakaw ~'akaw
-hakeb ~'akeb
-hama ~'ama
-hamang ~'amang
+hakeb
+hama
+hamang
 hamangi (ji)
-hanang ~'anang
-haneng ~'aneng
-hanga ~'anga
-hanghang ~'ang'ang
-hangin ~'angin
-hangno ~'angno
-hangop ~'angop
-hangsak ~'angsak
-hanhan ~'an'an
-hanit ~'anit
+hanang
+hanghang
+hangno
+hangop
+hangsak
 hap (ji a-)
-hapet ~'apet
-hara ~'ara
+hara
 harag (ji a-)
-harag ~'arag
 haraharan (kaji a-)
-hatas ~'atas
+hatas
 hatasi (to)
-hatay ~'atay
-havas ~'avas
-havit ~'avit
+hataw
+hatay
+havas
+havit
 hawa (yaji)
-hawa ~'awa
 hawan (ji)
-hawang~'awang
+hawang
 hayo (ji a-)
 hayo (to)
-hayo ~'ayo
 hayohayowen (ji a-)
 haywan (ji a-)
 haywan (kajya)
 haywan (kajyá)
-hema ~'ema
+hekas
 heman (ji)
-hemes ~'emes
-henep ~'enep
-heni ~'eni
-hep ~'ep
-hephep ~'ep'ep
-herahed ~'era'ed
-heseb ~'eseb
-hesep ~'esep
-hetaw ~'etaw
-hetek ~'etek
-hevek ~'evek
-heza ~'eza
-hezsad ~'ezsad
+hemes
+heni
+hep
+hephep
+herahed
+hesep
+hetaw
+hetek
+heza
+hezsad
 i-paka-tenng-an
 ibek
 icayrwa
+id
 igegen
 igen
 ikakarwa
@@ -473,12 +567,12 @@ inanod
 inara
 inawa
 ingbeywani (ji)
-ingen ~'ingen
+ingen
 ingenen (ji)
 ingit
 ingnan (ji)
 ingto
-inin ~'inin
+inin
 inini (ji)
 inlid
 inom
@@ -487,7 +581,7 @@ ipamarimaring  so kanen
 ipamarimaring so kanen
 ipamaring so kanen
 ipamaringan so kanen
-ipeykaititkeh ~ipeyka'it'itkeh
+ipeyka'it'itkeh
 ipong
 iras
 iray
@@ -496,18 +590,16 @@ isem
 iseveng
 iso
 ison
-itaw ~itao
-iteng ~'iteng
-ititkehan ~'it'itkehan
-itkeh ~'itkeh
-itkehan ~'itkehan
+itao
+itaw
+iteng
 iwam
 iwang
 iwangi (ji)
 iwangi (to)
 iyak
-iyop ~ayop
-izay ~'izay
+iyop
+izay
 jingned (toda)
 jyab來源:
 jyadagdag (toda)
@@ -524,12 +616,12 @@ jyaraw (toda)
 jyawakwak (toda)
 jyawakwakan (katod)
 ka niciyo
+ka'itkeh
 kaban
 kabayo
 kabkab
 kagom
 kaha
-kaitkeh ~ka'itkeh
 kakaday
 kakday
 kakteh do cinai
@@ -545,7 +637,7 @@ kamali
 kamay
 kamet (to a-)
 kamkam
-kan ~akan
+kan
 kanen sospa
 kanyaw
 kaod
@@ -576,7 +668,10 @@ kazain
 kazamo
 kazazap (jya)
 kaziknan(= kazikna)
+kcil
+kcin
 ke-ywakwak
+kecin
 kedked
 kehang
 kei (ji a-)
@@ -614,20 +709,21 @@ koyapet
 koyokoy
 kozong
 koztod
+kpeh
+kteb
 kzikzik
 labyab
 lahet
 lalin
 lamraw
 lamsoy
-lan ~alan
 lanat
 lanata (to)
 langi
 lansok
-lapik ~lap’ik
 lapit
 lapos
+lap’ik
 latlat
 lavang
 lavangi (to)
@@ -641,6 +737,7 @@ lavii (to)
 lavit
 lavong
 lektek
+lema
 libed
 lida
 ligaligana (to)
@@ -668,7 +765,7 @@ lingay
 lingowngaw
 lingowngawan (kajya)
 lipad
-lis ~alis
+lis
 lisan
 lita
 litai (ji a)
@@ -676,8 +773,8 @@ litai (ji a-)
 litai (to)
 livon
 logod
+loit
 lokong
-lolit ~loit
 lolo
 lolok
 lololos (ji)
@@ -799,6 +896,7 @@ macyozayan (kaji)
 maganam (ji)
 maglaglaw
 mahamaha
+maka'itkeh (ji)
 makabnebnek (ji)
 makabnebnekan (kaji)
 makabnebneki (ji)
@@ -825,7 +923,6 @@ makahapi (ji)
 makaharagan (kaji)
 makahespi (ji)
 makaitkeh (ji)
-makaitkeh ~maka'itkeh (ji)
 makakakani (ji)
 makakala (ji)
 makakalai (ji)
@@ -1033,6 +1130,7 @@ manovoyan (kaji)
 manoyoong
 mantan (ji)
 mantan (kaji)
+mapa'itkeh (ji)
 mapacitacittan (ji)
 mapadmai (ji)
 mapadmay
@@ -1041,7 +1139,6 @@ mapahanhani (to)
 mapainin (ji)
 mapainini (ji)
 mapaitkeh (ji)
-mapaitkeh ~mapa'itkeh (ji)
 mapakanan (kaji)
 mapakarakarang (ji)
 mapakarakarangan (kaji)
@@ -1134,8 +1231,8 @@ mazahab
 mehsa (to)
 meseseg
 meycicicyan (ji)
+meycya'it'itkeh
 meycyabobo (to)
-meycyaititkeh ~meycya'it'itkeh
 meycyakavatan (kaji)
 meycyangangay (to)
 meycyapyapinpinan (ji)
@@ -1291,7 +1388,6 @@ mogawan (kaji a-)
 mogawi (ji a-)
 monganai (ji)
 monganay (ji)
-monganay ~ponganay
 mowa
 mowva  tao
 mowva tao
@@ -1759,7 +1855,7 @@ nipavilang (ji)
 nipavogan
 nipeycicinda (ji)
 nipeykabobo (ji)
-nipeykaititkeh  ~nipeykait'itkeh
+nipeykait'itkeh
 nipeymakarwan (jya)
 nipeymowan (ji)
 nipeyyahahay (ji)
@@ -1792,6 +1888,7 @@ noib (to)
 noiban (to)
 noibi (to)
 nokow
+noma
 nomok (to)
 nomoki (to)
 nonoto (to)
@@ -1813,6 +1910,7 @@ novoya (ji)
 novoya (to)
 novoyan (kato)
 novwan (kato)
+nowji
 nownaw
 noyotan (kaji)
 nozey
@@ -1834,47 +1932,40 @@ obo
 obot
 ogto (ji)
 ogto (to)
-ogto ~'ogto
 ogtwan (to)
 okso (to)
-okso ~'okso
-oli ~'oli
+oli
 oliolyan (kato)
 oliya (to)
 om-azo-azovo
 oma來源:
 omon
 om來源:
-onag ~'onag
+onag
 onay
-ongong ~'ong'ong
+ongong
 onib (ji a-)
 oniban (kaji a-)
 onong
 onongi (ji a-)
 ononong
 onot
-oo ~'oo
-opag ~'opag
+opag
 opas
 opso
-opta ~'opta
-oran ~'oran
+opta
+oran
 oring
-orod ~'orod
+orod
 oso
-osok ~'osok
-ota ~'ota
-otab ~'otab
+osok
+ota
 oto (to)
-oto ~'oto
 oton
-otwan ~ 'otwan
+otwan
 ova
-ovay ~'ovay
 ovong
 owamek
-oya ~'oya
 oyab
 oyaoyahen (ji a-)
 oyas
@@ -1885,7 +1976,9 @@ oyyan (kaji)
 ozay
 ozib
 ozit
-ozoz ~'ozoz
+ozoz
+pa'ingwat
+pa'oyo
 Pa-Yeso
 pacici
 pacicya (ji)
@@ -1903,7 +1996,7 @@ pahamai (ji)
 pahanhana (ji)
 pahanhana (to)
 pahephepi (ji)
-paingwat ~pa'ingwat
+paingwat
 paingwatan (kaji)
 painini (ji)
 pait
@@ -1971,16 +2064,15 @@ paninida (to)
 panlanlag
 panma (to)
 panmanma (ji)
-panoma ~noma
+panoma
 panowji (to)
-panowji ~nowji
 panoyngan (kaji)
 panpan
 panta
 panwanoda (to)
 paolya (ji)
 paolya (to)
-paoyo ~pa'oyo
+paoyo
 papen
 papenan (kato)
 papo
@@ -2117,24 +2209,27 @@ pinan
 pinda
 pingsan
 pinpin
-pira ~apira
+pira
 pising
 pisingsingkadan
 pisipisingan (kaji -a)
 pisipisingan (kaji a-)
 pispis
-pito ~apito
+pito
+piya
 Pocyo Veyseto
 podpod
 pokpok
 polcing
 poling
+ponganay
 pongos
 potow
-powaw ~poo
+powaw
 powbota (to)
 powpaw
 powziba (ji)
+pzat
 raci (ji a-)
 raci (ji)
 rahan
@@ -2145,8 +2240,8 @@ raheraheta (ji)
 raherahetan (kaji a-)
 rahet (ji a-)
 raheta (ji)
+raigereg
 rakep
-rako ~arako
 rakpa (ji)
 rakpa (to)
 rakpi (ji)
@@ -2189,14 +2284,16 @@ rehmet
 rehrehci (ji)
 rehrehta (to)
 rehrehtan (kaji)
+rek'ang
 reket
-rekhang ~rek'ang
+rekhang
 rekmeh
 rengay
 rokop
 ronoron
 rorokma
 rotong
+rwa
 saboy
 sabsab
 sabway
@@ -2221,7 +2318,8 @@ saliway
 samorang
 samozong
 sanap
-sanga ~sanga’
+sanga
+sanga’
 sangib
 sangiban (kaji a-)
 sangoz (ji a-)
@@ -2233,8 +2331,9 @@ sapa (to)
 sapet
 sapopo
 sapwat
-saraw ~sarow
+saraw
 sari (to a-)
+sarow
 sasnad
 sasnaji (ji a-)
 savak
@@ -2244,7 +2343,7 @@ sazab
 sazang
 sazap
 sazasaz
-sazawsaw ~sazowsaw
+sazawsaw
 sazi (to a-)
 sazibo
 sazid
@@ -2259,7 +2358,6 @@ sepsep
 seyked
 seyrem
 seysay
-si ~ci
 siblak
 sibo
 sidong (ji a-)
@@ -2288,7 +2386,10 @@ sirangned so ninyakan (to)
 sirisiring
 sisi
 sivoz
+sleb
+slet
 snesnekan (ji a-)
+sngen
 sobna
 sobsob
 soib
@@ -2340,7 +2441,8 @@ tamwad
 tangara
 tangay
 tangen
-tanggeh ~tanggah
+tanggah
+tanggeh
 tangked
 tangtoktwan (ji)
 tao do to
@@ -2381,19 +2483,24 @@ tengpahan (kaji a-)
 tenngi (ji a-)
 tenngi (to a-)
 tentenngi (ji a-)
+tepeh
 tey maveveh
 tey rahet
 teynep
 teytay
 teyteyras (to a-)
+tigzang
+tikap
 tirara
+tiray
+tita
 tod na ji
 toda ji
 toda jya
 toda jya-
 toda ka
 toda ka (jya)
-todah ~todeh
+todah
 todaji
 todaka
 todapya (jya)
@@ -2401,6 +2508,7 @@ todarahet (ji)
 todasaki (ji)
 todasnek (ji)
 todavaki do ahep
+todeh
 todna ka
 todo
 toin
@@ -2414,7 +2522,6 @@ tongtong
 tongwakwan (ji)
 tonod
 tonton
-tonton ~atonton
 toong
 topi
 toplis
@@ -2432,7 +2539,7 @@ toyo
 toyon
 tozak
 twatontonan (kato a-)
-tyok ~cyok
+tyok
 vaci
 vahangso
 vait
@@ -2498,11 +2605,11 @@ vozwaw
 vozwawan (kaji)
 vyai (ji)
 vyai (jí)
+vyay
 wadwad
 wagwag
 wagwaga (to)
 wakwak (ji a-)
-wakwak ~'wakwak
 wakwaka (ji)
 wakwaka (to)
 wakwakan (kaji)
@@ -2528,28 +2635,24 @@ yamatarek so vahay
 yamatwatonton
 yamrekep
 yamtwatonton
-yangaw ~'yangaw
 yanwanood
 yaomeylamdam
-yapet ~'yapet
+yapet
 yatoda (jya-)
 yatoda jya-
-yavayo ~'yavayo
-yaw ~'yaw
-yoba ~'yoba
+yaw
+yoba
 yokay (ji a-)
-yokay ~’yokay
 yokaya (ji)
-yokod ~’yokod
-yoman ~'yoman
-yongkad ~’yongkad
+yokod
+yoman
 yongkaji (ji)
-yongob ~’yongob
+yongob
 yonong
-yora ~'yora
-yoray ~’yoray
-yowyaw  ~’yowyaw
-yoyo ~'yoyo
+yora
+yoray
+yowyaw
+yoyo
 yoyoi (to)
 z-om-aigezeg
 zababan (kaji a-)
@@ -2560,7 +2663,7 @@ zagpici (to)
 zagpit (ji)
 zagzag (to)
 zahab
-zaigezeg ~raigereg
+zaigezeg
 zakat (ji a-)
 zakata (to)
 zakdang
@@ -2587,7 +2690,7 @@ zengang
 zezezeng (to)
 zigton
 zigzig
-zikaz ~azikaz
+zikaz
 zikzik (to)
 zikziknan (to a-)
 zimakmak
@@ -2600,8 +2703,15 @@ zomtad
 zomyan
 zonos
 zosod
-zovo ~azovo
+zovo
 zoyo
+zway
 zyakan (ji a-)
 zyaki (ji a-)
 zyodan (ji)
+’yokay
+’yokod
+’yongkad
+’yongob
+’yoray
+’yowyaw
